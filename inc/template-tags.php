@@ -370,6 +370,67 @@ namespace DevHub {
 	}
 
 	/**
+	 * Retrieve parameters as an array
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array
+	 */
+	function get_params( $post_id = null ) {
+
+		if ( empty( $post_id ) ) {
+			$post_id = get_the_ID();
+		}
+
+		$args = get_post_meta( $post_id, '_wpapi_args', true );
+		$tags = get_post_meta( $post_id, '_wpapi_tags', true );
+		foreach ( $tags as $tag ) {
+			if ( 'param' == $tag['name'] ) {
+				$params[ $tag['variable'] ] = $tag;
+				foreach ( $tag['types'] as $i => $v ) {
+					$types[$i] = "<span class=\"{$v}\">{$v}</span>";
+				}
+				$params[ $tag['variable'] ]['types'] = implode( '|', $types );
+				if ( strtolower( substr( $tag['content'], 0, 8 ) ) == "optional." ) {
+					$params[ $tag['variable'] ]['required'] = 'Optional';
+					$params[ $tag['variable'] ]['content'] = substr( $tag['content'], 9 );
+				} else {
+					$params[ $tag['variable'] ]['required'] = 'Required';
+				}
+			}
+		}
+		foreach ( $args as $arg ) {
+			if ( ! empty ( $params[ $arg['name'] ] ) ) {
+				$params[ $arg['name'] ]['default'] = $arg['default'];
+			}
+
+		}
+		return $params;
+	}
+
+	/**
+	 * Retrieve arguments as an array
+	 *
+	 * @param int $post_id
+	 *
+	 * @return array
+	 */
+	function get_arguments( $post_id = null ) {
+
+		if ( empty( $post_id ) ) {
+			$post_id = get_the_ID();
+		}
+		$arguments = array();
+		$args = get_post_meta( $post_id, '_wpapi_args', true );
+		foreach ( $args as $arg ) {
+			if ( ! empty ( $arg['type'] ) ) {
+				$arguments[ $arg['name'] ] = $arg['type'];
+			}
+		}
+		return $arguments;
+	}
+
+	/**
 	 * Retrieve return type and description if available
 	 *
 	 * @param int $post_id
