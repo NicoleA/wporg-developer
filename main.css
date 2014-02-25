@@ -150,7 +150,7 @@ textarea {
   background-color: #dfdfdf;
   border: 0;
   height: 1px;
-  margin-bottom: 1.5em;
+  margin: 1.5em 0;
 }
 .devhub-wrap p {
   margin-bottom: 1.5em;
