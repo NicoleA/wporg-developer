@@ -1097,6 +1097,19 @@ textarea {
 		}
 		h2 {
 			font-family: $serif-font;
+			margin-bottom: .5em;
+		}
+		.parameters {
+			p {
+				margin-bottom: 0;
+			}
+			dd {
+				.desc {
+					.type, .required {
+						font-style: italic;
+					}
+				}
+			}
 		}
 		.learn-more {
 			background-color: #f1f1f1;

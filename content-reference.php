@@ -16,7 +16,7 @@
 	$since = get_since();
 if ( ! empty( $since ) ) : ?>
 	<section class="since">
-		<p><strong>Since:</strong> WordPress <a href="<?php echo get_since_link( $since ); ?>"><?php echo $since; ?></a></p>
+		<p><strong>Since:</strong> WordPress <a href="<?php echo get_since_link( $since ); ?>"><?php echo esc_html( $since ); ?></a></p>
 	</section>
 <?php endif; ?>
 <?php if ( is_archive() ) : ?>
@@ -33,10 +33,10 @@ if ( ! empty( $since ) ) : ?>
 		<?php $params = get_params(); ?>
 		<dl>
 			<?php foreach( $params as $param ) : ?>
-			<dt><?php echo $param['variable']; ?></dt>
+			<dt><?php echo esc_html( $param['variable'] ); ?></dt>
 			<dd>
-				<p class="desc"><span class="type">(<span><?php echo $param['types']; ?></span>)</span> <span class="required">(<?php echo $param['required']; ?>) <?php echo $param['content']; ?></p>
-				<p class="default"><?php echo $param['default']; ?></p>
+				<p class="desc"><span class="type">(<?php echo wp_kses_post( $param['types'] ); ?>)</span> <span class="required">(<?php echo esc_html( $param['required'] ); ?>) <?php echo wp_kses_post( $param['content'] ); ?></p>
+				<p class="default"><?php echo esc_html( $param['default'] ); ?></p>
 			</dd>
 			<?php endforeach; ?>
 		</dl>

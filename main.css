@@ -1036,6 +1036,13 @@ textarea {
 }
 .devhub-wrap .wpapi-class h2, .devhub-wrap .wpapi-function h2, .devhub-wrap .wpapi-hook h2 {
   font-family: Georgia, ​Times, ​serif;
+  margin-bottom: .5em;
+}
+.devhub-wrap .wpapi-class .parameters p, .devhub-wrap .wpapi-function .parameters p, .devhub-wrap .wpapi-hook .parameters p {
+  margin-bottom: 0;
+}
+.devhub-wrap .wpapi-class .parameters dd .desc .type, .devhub-wrap .wpapi-class .parameters dd .desc .required, .devhub-wrap .wpapi-function .parameters dd .desc .type, .devhub-wrap .wpapi-function .parameters dd .desc .required, .devhub-wrap .wpapi-hook .parameters dd .desc .type, .devhub-wrap .wpapi-hook .parameters dd .desc .required {
+  font-style: italic;
 }
 .devhub-wrap .wpapi-class .learn-more, .devhub-wrap .wpapi-function .learn-more, .devhub-wrap .wpapi-hook .learn-more {
   background-color: #f1f1f1;
