@@ -361,3 +361,16 @@ function search_filter( $query ) {
 	}
 }
 add_action( 'pre_get_posts', __NAMESPACE__ . '\\search_filter' );
+
+function search_badge() {
+	$post_type = get_post_type();
+	if ( $post_type == 'wp-parser-class' ) {
+		return '<div class="badge" title="Class">C</div>';
+	} elseif ( $post_type == 'wp-parser-function' ) {
+		return '<div class="badge" title="Function">Fn</div>';
+	} elseif ( $post_type == 'wp-parser-hook' ) {
+		return '<div class="badge" title="Hook">H</div>';
+	} elseif ( $post_type == 'wp-parser-method' ) {
+		return '<div class="badge" title="Method">M</div>';
+	}
+}
