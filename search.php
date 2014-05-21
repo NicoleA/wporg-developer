@@ -12,6 +12,17 @@ get_header(); ?>
 		<header class="page-header">
 			<h1 class="page-title"><?php printf( __( 'Search Results for: %s', 'wporg' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
 		</header><!-- .page-header -->
+		
+		<div class="topic-guide section">
+			<ul class="unordered-list horizontal-list no-bullets">
+				<?php $current_filter = remove_query_arg( 'paged' ) ?>
+				<li><a href="<?php echo add_query_arg( 'type', 'wp-parser-function', $current_filter ); ?>"><?php _e( 'Functions', 'wporg' ); ?></a></li>
+				<li><a href="<?php echo add_query_arg( 'type', 'wp-parser-hook', $current_filter ); ?>"><?php _e( 'Hooks', 'wporg' ); ?></a></li>
+				<li><a href="<?php echo add_query_arg( 'type', 'wp-parser-class', $current_filter ); ?>"><?php _e( 'Classes', 'wporg' ); ?></a></li>
+				<li><a href="<?php echo add_query_arg( 'type', 'wp-parser-method', $current_filter ); ?>"><?php _e( 'Methods', 'wporg' ); ?></a></li>
+			</ul>
+		</div><!-- /topic-guide -->
+		
 		<main id="main" class="site-main" role="main">
 
 		<?php if ( have_posts() ) : ?>
