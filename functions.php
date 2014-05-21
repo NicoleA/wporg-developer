@@ -346,3 +346,18 @@ function theme_scripts_styles() {
 		wp_enqueue_script( 'comment-reply' );
 	}
 }
+
+function search_query_vars( $aVars ) {
+	$aVars[] = 'type';
+	return $aVars;
+}
+
+add_filter( 'query_vars',  __NAMESPACE__ . '\\search_query_vars' );
+
+function search_filter( $query ) {
+	$type = ( get_query_var( 'type' ) ? get_query_var( 'type' ) : false );
+	if ( $query->is_search() && $query->is_main_query() && $type ) {
+		$query->set( 'post_type', $type );
+	}
+}
+add_action( 'pre_get_posts', __NAMESPACE__ . '\\search_filter' );
