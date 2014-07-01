@@ -1001,6 +1001,37 @@
 	}
 }
 
+.badge {
+
+	.devhub-wrap &{
+		display: inline-block;
+		border-radius: 100%;
+		width: 40px;
+		height:40px;
+		line-height: 40px;
+		text-align: center;
+		margin-left: -100px;
+		margin-right: 110px;
+		color: #606060;
+	}
+
+	.wp-parser-class & {
+	background: #D3BAE3;
+	}
+
+	.wp-parser-function & {
+		background: #94CDE7;
+	}
+
+	.wp-parser-hook & {
+		background: #94E7AE;
+	}
+
+	.wp-parser-method & {
+		background: #E7C994;
+	}
+}
+
 @media ( max-width: 59.999999em ) {
 
 	.devhub-wrap {
