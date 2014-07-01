@@ -2,7 +2,7 @@
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
-	<h1><a href="<?php the_permalink() ?>"><?php echo get_signature(); ?></a></h1>
+	<h1><?php echo search_badge(); ?><a href="<?php the_permalink() ?>"><?php echo get_signature(); ?></a></h1>
 
 	<section class="description">
 		<?php the_excerpt(); ?>

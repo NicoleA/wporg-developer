@@ -346,3 +346,31 @@ function theme_scripts_styles() {
 		wp_enqueue_script( 'comment-reply' );
 	}
 }
+
+function search_query_vars( $aVars ) {
+	$aVars[] = 'type';
+	return $aVars;
+}
+
+add_filter( 'query_vars',  __NAMESPACE__ . '\\search_query_vars' );
+
+function search_filter( $query ) {
+	$type = ( get_query_var( 'type' ) ? get_query_var( 'type' ) : false );
+	if ( $query->is_search() && $query->is_main_query() && $type ) {
+		$query->set( 'post_type', $type );
+	}
+}
+add_action( 'pre_get_posts', __NAMESPACE__ . '\\search_filter' );
+
+function search_badge() {
+	$post_type = get_post_type();
+	if ( $post_type == 'wp-parser-class' ) {
+		return '<div class="badge" title="Class">C</div>';
+	} elseif ( $post_type == 'wp-parser-function' ) {
+		return '<div class="badge" title="Function">Fn</div>';
+	} elseif ( $post_type == 'wp-parser-hook' ) {
+		return '<div class="badge" title="Hook">H</div>';
+	} elseif ( $post_type == 'wp-parser-method' ) {
+		return '<div class="badge" title="Method">M</div>';
+	}
+}
