@@ -282,10 +282,12 @@ namespace DevHub {
 		switch ( $parts[1] ) {
 			case 'reference':
 				return 'Code Reference';
-			case 'theme-handbook':
-				return 'Theme Handbook';
-			case 'plugin-handbook':
-				return 'Plugin Handbook';
+			case 'handbook':
+				if ( 'theme' == $parts[2] ) {
+					return 'Theme Handbook';
+				} else {
+					return 'Plugin Handbook';
+				}
 			default:
 				return 'Developer Resources';
 		}

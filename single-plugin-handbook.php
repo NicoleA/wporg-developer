@@ -9,9 +9,9 @@ get_header(); ?>
 
 	<div id="content-area" class="has-sidebar">
 
-		<?php breadcrumb_trail(); ?>
+		<?php //breadcrumb_trail(); ?>
 
-		<main id="main" class="site-main" role="main">
+		<main id="main" <?php post_class( 'site-main' ); ?> role="main">
 
 		<?php while ( have_posts() ) : the_post(); ?>
 
@@ -29,6 +29,6 @@ get_header(); ?>
 		<?php endwhile; // end of the loop. ?>
 
 		</main><!-- #main -->
-	<?php get_sidebar(); ?>
+		<?php get_sidebar(); ?>
 	</div><!-- #primary -->
 <?php get_footer(); ?>

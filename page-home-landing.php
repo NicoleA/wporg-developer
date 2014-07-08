@@ -8,8 +8,8 @@
  */
 
 // Temporarily redirect to reference until other section become live, justifying a main landing page.
-wp_redirect( get_permalink( get_page_by_path( 'reference' ) ) );
-exit();
+//wp_redirect( get_permalink( get_page_by_path( 'reference' ) ) );
+//exit();
 
 get_header(); ?>
 
