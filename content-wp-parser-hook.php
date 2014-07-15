@@ -3,7 +3,6 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
 	<h1><a href="<?php the_permalink() ?>"><?php echo get_signature(); ?></a></h1>
-
 	<section class="description">
 		<?php the_excerpt(); ?>
 	</section>
@@ -24,28 +23,34 @@
 
 	<?php
 	$source_file = get_source_file();
-	if ( ! empty( $source_file ) ) : ?>
-	<section class="source">
-		<p><strong><?php _e( 'Source:', 'wporg' ); ?></strong> <a href="<?php echo get_source_file_link( $source_file ); ?>"><?php echo esc_html( $source_file ); ?></a></p>
-	</section>
+	if ( ! empty( $source_file ) ) :
+		?>
+		<section class="source">
+			<p>
+				<strong><?php _e( 'Source file:', 'wporg' ); ?></strong>
+				<a href="<?php echo get_source_file_archive_link( $source_file ); ?>"><?php echo esc_html( $source_file ); ?></a>
+			</p>
+			<p>
+				<a href="<?php echo get_source_file_link(); ?>"><?php _e( 'View on Trac', 'wporg' ); ?></a>
+			</p>
+		</section>
 	<?php endif; ?>
 
-	<?php /* if ( is_archive() ) : ?>
+		<?php /*
+		<?php if ( is_archive() ) : ?>
 		<section class="meta">Used by TODO | Uses TODO | TODO Examples</section>
-	<?php endif; */ ?>
-
-		<!--
+		<?php endif; ?>
 		<hr/>
 		<section class="explanation">
 			<h2><?php _e( 'Explanation', 'wporg' ); ?></h2>
 		</section>
-		-->
+		*/ ?>
 
 		<?php if ( $params = get_params() ) : ?>
 
 			<hr/>
 			<section class="parameters">
-				<h2><?php _e( 'Parameters', 'wporg-developer' ); ?></h2>
+				<h2><?php _e( 'Parameters', 'wporg' ); ?></h2>
 				<dl>
 					<?php foreach ( $params as $param ) : ?>
 						<?php if ( ! empty( $param['variable'] ) ) : ?>
@@ -71,16 +76,21 @@
 			</section>
 		<?php endif; ?>
 
+		<?php /*
 		<hr/>
-		<!--
 		<section class="learn-more">
 			<h2><?php _e( 'Learn More', 'wporg' ); ?></h2>
 		</section>
+		*/ ?>
+
+		<?php if ( have_comments() || ( comments_open() && is_user_member_of_blog() ) ) : ?>
 		<hr/>
 		<section class="examples">
 			<h2><?php _e( 'Examples', 'wporg' ); ?></h2>
+			<?php get_template_part( 'code-example' ); ?>
 		</section>
-		-->
+		<?php endif; ?>
+
 	<?php endif; ?>
 
 </article>

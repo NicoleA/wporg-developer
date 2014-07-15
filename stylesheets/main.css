@@ -182,17 +182,23 @@ button, input { line-height: normal; /* Addresses FF3/4 setting line-height usin
 .devhub-wrap .section.light-gray a { color: #606060; text-decoration: none; }
 .devhub-wrap .section .home-primary-content { max-width: 600px; max-width: 60rem; margin: 0 auto; }
 .devhub-wrap .box { padding: 30px; padding: 3rem; float: left; clear: none; }
+.devhub-wrap .section.search-section { padding-bottom: 0; }
+.devhub-wrap .searchform { overflow: hidden; height: auto; margin-bottom: 1em; }
+.devhub-wrap .searchform input[type="text"], .devhub-wrap .searchform input[type="submit"] { height: 50px; height: 5rem; margin-bottom: 1em; width: 100%; }
+.devhub-wrap .searchform input[type="submit"] { width: 85px; width: 8.5rem; float: left; }
+.devhub-wrap .searchform label { width: 560px; width: 56rem; max-width: 100%; margin-right: 15px; display: inline-block; float: left; }
+.devhub-wrap .searchform label .search-field input[type="text"] { width: 100%; }
+.devhub-wrap .searchform div { overflow: auto; }
+.devhub-wrap .searchform .search-post-type label { border-right: 1px solid #ccc; float: none; width: inherit; margin-left: 1em; margin-right: 0; padding-left: 0; padding-right: 1.3em; }
+.devhub-wrap .searchform .search-post-type label input { padding-left: 0.5em; }
+.devhub-wrap .searchform .search-post-type label:last-child { border-right-width: 0; }
+.devhub-wrap .search-results-summary { font-style: italic; margin-bottom: 1em; }
 .devhub-wrap .reference-landing { padding: 1em 0; }
 .devhub-wrap .reference-landing .section { max-width: 700px; max-width: 70rem; margin: 0 auto; padding: 1.5em 0; }
 .devhub-wrap .reference-landing .section h2, .devhub-wrap .reference-landing .section h3, .devhub-wrap .reference-landing .section h4 { margin-bottom: 1em; color: #404040; }
 .devhub-wrap .reference-landing .section h2.widget-title, .devhub-wrap .reference-landing .section h3.widget-title, .devhub-wrap .reference-landing .section h4.widget-title { margin-bottom: 0; }
 .devhub-wrap .reference-landing .section.search-guide { padding-bottom: 0; }
 .devhub-wrap .reference-landing .section.section.topic-guide, .devhub-wrap .reference-landing .section.section.new-in-guide { padding-top: 0; }
-.devhub-wrap .reference-landing .searchform { overflow: hidden; height: auto; margin-bottom: 1em; }
-.devhub-wrap .reference-landing .searchform input { height: 50px; height: 5rem; margin-bottom: 1em; width: 100%; }
-.devhub-wrap .reference-landing .searchform input[type="submit"] { width: 85px; width: 8.5rem; float: left; }
-.devhub-wrap .reference-landing .searchform label { width: 560px; width: 56rem; max-width: 100%; margin-right: 15px; display: inline-block; float: left; }
-.devhub-wrap .reference-landing .searchform label .search-field input[type="text"] { width: 100%; }
 .devhub-wrap .reference-landing .box, .devhub-wrap .sidebar .box { padding: 0; border: 2px solid #cccccc; background-color: #eeeeee; }
 .devhub-wrap .reference-landing .box ul, .devhub-wrap .sidebar .box ul { padding: 2em; }
 .devhub-wrap .reference-landing .box .widget-title, .devhub-wrap .sidebar .box .widget-title { padding: 10px 30px; padding: 1rem 30px; font-size: 16px; font-size: 1.6rem; }
@@ -237,10 +243,18 @@ button, input { line-height: normal; /* Addresses FF3/4 setting line-height usin
 .devhub-wrap .wp-parser-class .learn-more, .devhub-wrap .wp-parser-function .learn-more, .devhub-wrap .wp-parser-hook .learn-more, .devhub-wrap .wp-parser-method .learn-more { background-color: #f1f1f1; border: 1px solid #dfdfdf; border-radius: 5px; padding: 20px; }
 .devhub-wrap.archive .wp-parser-class h1 a, .devhub-wrap.archive .wp-parser-function h1 a, .devhub-wrap.archive .wp-parser-hook h1 a, .devhub-wrap.archive .wp-parser-method h1 a, .devhub-wrap.search .wp-parser-class h1 a, .devhub-wrap.search .wp-parser-function h1 a, .devhub-wrap.search .wp-parser-hook h1 a, .devhub-wrap.search .wp-parser-method h1 a { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #21759b; font-weight: normal; }
 .devhub-wrap.archive .wp-parser-class div.sourcefile, .devhub-wrap.archive .wp-parser-function div.sourcefile, .devhub-wrap.archive .wp-parser-hook div.sourcefile, .devhub-wrap.archive .wp-parser-method div.sourcefile, .devhub-wrap.search .wp-parser-class div.sourcefile, .devhub-wrap.search .wp-parser-function div.sourcefile, .devhub-wrap.search .wp-parser-hook div.sourcefile, .devhub-wrap.search .wp-parser-method div.sourcefile { color: #999999; font-style: italic; }
+.devhub-wrap .single .wp-parser-class, .devhub-wrap .single .wp-parser-function, .devhub-wrap .single .wp-parser-hook, .devhub-wrap .single .wp-parser-method { border-bottom-style: none; }
+.devhub-wrap .source-content { overflow: auto; }
+.devhub-wrap .source-code-links { margin-left: 2em; margin-top: 1em; }
+.devhub-wrap .source-code-links span:first-child { display: none; border-right: 1px solid #999; margin-right: 1em; padding-right: 1em; }
+.devhub-wrap .source-code-container { border-right: 1px solid #dfdfdf; overflow-x: auto; overflow-y: hidden; }
+.devhub-wrap .show-complete-source, .devhub-wrap .less-complete-source { display: none; }
 .devhub-wrap .loop-pagination { text-align: center; font-size: 18px; margin-bottom: 20px; }
-.devhub-wrap .comment-list, .devhub-wrap .comment-list ol { list-style: none; margin: 0 0 1.5em 0; border-top: 1px solid #eee; padding: 0; }
-.devhub-wrap .comment-list li { padding: 24px 24px 0 24px; padding: 1.5rem 1.5rem 0 1.5rem; border: 1px solid #eee; border-top: none; background: #fff; }
-.devhub-wrap .comment-list .avatar { float: left; width: 2.5em; height: 2.5em; margin: 0 1em 0.5em 0; padding: 0.125em; border: 1px solid #eee; }
+.devhub-wrap .comment-list, .devhub-wrap .comment-list ol { list-style: none; margin: 0 0 1.5em 0; padding: 0; }
+.devhub-wrap .comment-list li { padding: 24px 24px 0 24px; padding: 1.5rem 1.5rem 0 1.5rem; border: 0 solid #eee; border-bottom-width: 1px; background: #fff; }
+.devhub-wrap .comment-list li:first-child { padding-top: 0; }
+.devhub-wrap .comment-list .avatar { float: left; width: 2.5em; height: 2.5em; margin: -0.5em 1em 0.5em 0; padding: 0.125em; border: 1px solid #eee; }
+.devhub-wrap .comment-author-attribution { font-weight: bold; }
 .devhub-wrap .comment-meta { margin: 0 0 1.5em 0; font-size: 0.75em; }
 .devhub-wrap .comment-content { margin-left: 60px; margin-left: 3.75rem; margin-left: 0; clear: both; }
 .devhub-wrap .comment-content ol { list-style: decimal inside; margin: 0 0 1.5em 0; border-top: none; margin: 0 0 1.5em 1.5em; padding: 0; }

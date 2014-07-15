@@ -92,17 +92,34 @@ namespace {
 
 				<li id="comment-<?php comment_ID(); ?>" <?php comment_class( empty( $args['has_children'] ) ? '' : 'parent' ); ?>>
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body">
+					<div class="comment-content code-example-container">
+						<pre class="brush: php; toolbar: false;"><?php echo htmlentities( get_comment_text() ); ?></pre>
+					</div>
+					<!-- .comment-content -->
+
 					<footer class="comment-meta">
 						<div class="comment-author vcard">
+							<span class="comment-author-attribution">
 							<?php if ( 0 != $args['avatar_size'] ) {
 								echo get_avatar( $comment, $args['avatar_size'] );
 							} ?>
-							<?php printf( __( '%s <span class="says">says:</span>', 'wporg' ), sprintf( '<cite class="fn">%s</cite>', get_comment_author_link() ) ); ?>
-						</div>
-						<!-- .comment-author -->
 
-						<div class="comment-metadata">
-							<a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">
+							<?php
+								// This would all be moot if core passed the $comment context for 'get_comment_author_link' filter
+								if ( $comment->user_id ) {
+									$commenter = get_user_by( 'id', $comment->user_id );
+									$url = 'https://profiles.wordpress.org/' . esc_attr( $commenter->user_nicename ) . '/';
+									$author = get_the_author_meta( 'display_name', $comment->user_id );
+									$comment_author_link = "<a href='$url' rel='external nofollow' class='url'>$author</a>";
+								} else {
+									$comment_author_link = '';
+								}
+								printf( __( 'Contributed by %s', 'wporg' ), sprintf( '<cite class="fn">%s</cite>', $comment_author_link ) );
+							?>
+
+							</span>
+							&mdash;
+							Added on <a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">
 								<time datetime="<?php comment_time( 'c' ); ?>">
 									<?php printf( _x( '%1$s at %2$s', '1: date, 2: time', 'wporg' ), get_comment_date(), get_comment_time() ); ?>
 								</time>
@@ -112,15 +129,10 @@ namespace {
 						<!-- .comment-metadata -->
 
 						<?php if ( '0' == $comment->comment_approved ) : ?>
-							<p class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.', 'wporg' ); ?></p>
+							<p class="comment-awaiting-moderation"><?php _e( 'Your example is awaiting moderation.', 'wporg' ); ?></p>
 						<?php endif; ?>
 					</footer>
 					<!-- .comment-meta -->
-
-					<div class="comment-content">
-						<?php comment_text(); ?>
-					</div>
-					<!-- .comment-content -->
 
 					<?php
 					comment_reply_link( array_merge( $args, array(
@@ -249,19 +261,64 @@ namespace DevHub {
 	}
 
 	/**
-	 * Get current (latest) since major version (X.Y.0) term object.
+	 * Get current version of the parsed WP code.
 	 *
-	 * @return object
+	 * Prefers the 'wp_parser_imported_wp_version' option value set by more
+	 * recent versions of the parser. Failing that, it checks the
+	 * WP_CORE_LATEST_RELEASE constant (set on WP.org) though this is not
+	 * guaranteed to be the latest parsed version. Failing that, it uses
+	 * the WP version of the site, unless it isn't a release version, in
+	 * which case a hardcoded value is assumed.
+	 *
+	 * @return string
 	 */
 	function get_current_version() {
-		$current_version = defined( 'WP_CORE_LATEST_RELEASE' ) ? WP_CORE_LATEST_RELEASE : '3.9';
-		$version_parts = explode( '.', $current_version, 3 );
-		if ( count( $version_parts ) == 2 ) {
-			$version_parts[] = '0';
-		} else {
-			$version_parts[2] = '0';
+		global $wp_version;
+
+		// Preference for the value saved as an option.
+		$current_version = get_option( 'wp_parser_imported_wp_version' );
+
+		// Otherwise, assume the value stored in a constant (which is set on WP.org), if defined.
+		if ( empty( $current_version ) && defined( 'WP_CORE_LATEST_RELEASE' ) && WP_CORE_LATEST_RELEASE ) {
+			$current_version = WP_CORE_LATEST_RELEASE;
 		}
-		$current_version = implode( '.', $version_parts );
+
+		// Otherwise, use the version of the running WP instance.
+		if ( empty( $current_version ) ) {
+			$current_version = $wp_version;
+
+			// However, if the running WP instance appears to not be a release
+			// version, assume a hardcoded version that is at least valid.
+			if ( false !== strpos( $current_version, '-' ) ) {
+				$current_version = '3.9.1';
+			}
+		}
+
+		return $current_version;
+	}
+
+	/**
+	 * Get current (latest) version of the parsed WP code as a wp-parser-since
+	 * term object.
+	 *
+	 * By default returns the major version (X.Y.0) term object because minor
+	 * releases rarely add enough, if any, new things to feature.
+	 *
+	 * @param  boolean $ignore_minor Use the major release version X.Y.0 instead of the actual version X.Y.Z?
+	 * @return object
+	 */
+	function get_current_version_term( $ignore_minor = true ) {
+		$current_version = get_current_version();
+
+		if ( $ignore_minor ) {
+			$version_parts = explode( '.', $current_version, 3 );
+			if ( count( $version_parts ) == 2 ) {
+				$version_parts[] = '0';
+			} else {
+				$version_parts[2] = '0';
+			}
+			$current_version = implode( '.', $version_parts );
+		}
 
 		$version = get_terms( 'wp-parser-since', array(
 			'number' => '1',
@@ -418,6 +475,7 @@ namespace DevHub {
 		$tags = get_post_meta( $post_id, '_wp-parser_tags', true );
 
 		if ( $tags ) {
+			$encountered_optional = false;
 			foreach ( $tags as $tag ) {
 				if ( 'param' == $tag['name'] ) {
 					$params[ $tag['variable'] ] = $tag;
@@ -425,9 +483,12 @@ namespace DevHub {
 						$types[ $i ] = "<span class=\"{$v}\">{$v}</span>";
 					}
 					$params[ $tag['variable'] ]['types'] = implode( '|', $types );
-					if ( strtolower( substr( $tag['content'], 0, 8 ) ) == "optional." ) {
+					if ( strtolower( substr( $tag['content'], 0, 9 ) ) == "optional." ) {
 						$params[ $tag['variable'] ]['required'] = 'Optional';
-						$params[ $tag['variable'] ]['content'] = substr( $tag['content'], 9 );
+						$params[ $tag['variable'] ]['content'] = substr( $tag['content'], 10 );
+						$encountered_optional = true;
+					} elseif ( $encountered_optional ) {
+						$params[ $tag['variable'] ]['required'] = 'Optional';
 					} else {
 						$params[ $tag['variable'] ]['required'] = 'Required';
 					}
@@ -530,13 +591,13 @@ namespace DevHub {
 	}
 
 	/**
-	 * Retrieve URL to source file archive
+	 * Retrieve URL to source file archive.
 	 *
 	 * @param string $name
 	 *
 	 * @return string
 	 */
-	function get_source_file_link( $name = null ) {
+	function get_source_file_archive_link( $name = null ) {
 
 		$source_file_object = get_term_by( 'name', empty( $name ) ? get_source_file() : $name, 'wp-parser-source-file' );
 
@@ -558,6 +619,32 @@ namespace DevHub {
 	}
 
 	/**
+	 * Retrieve the URL to the actual source file and line.
+	 *
+	 * @param null $post_id     Post ID.
+	 * @param bool $line_number Whether to append the line number to the URL.
+	 *                          Default true.
+	 * @return string Source file URL with or without line number.
+	 */
+	function get_source_file_link( $post_id = null, $line_number = true ) {
+
+		$post_id = empty( $post_id ) ? get_the_ID() : $post_id;
+		$url     = '';
+
+		// Source file.
+		$source_file = get_source_file( $post_id );
+		if ( ! empty( $source_file ) ) {
+			$url = 'https://core.trac.wordpress.org/browser/tags/' . get_current_version() . '/src/' . $source_file;
+			// Line number.
+			if ( $line_number = get_post_meta( get_the_ID(), '_wp-parser_line_num', true ) ) {
+				$url .= "#L{$line_number}";
+			}
+		}
+
+		return esc_url( $url );
+	}
+
+	/*
 	 * Retrieve starting line number
 	 *
 	 * @param int $post_id
@@ -565,9 +652,7 @@ namespace DevHub {
 	 * @return string
 	 */
 	function get_line_number( $post_id = null ) {
-
 		$line_num = get_post_meta( empty( $post_id ) ? get_the_ID() : $post_id, '_wp-parser_line_num', true );
-
 		return $line_num;
 	}
 
@@ -581,6 +666,103 @@ namespace DevHub {
 	 */
 	function compare_objects_by_name( $a, $b ) {
 		return strcmp( $a->post_name, $b->post_name );
+	}
+
+	/**
+	 * Does the post type have source code?
+	 *
+	 * @param  string  Optional. The post type name. If blank, assumes current post type.
+	 *
+	 * @return boolean
+	 */
+	function post_type_has_source_code( $post_type = null ) {
+		$post_type                   = $post_type ? $post_type : get_post_type();
+		$post_types_with_source_code = array( 'wp-parser-method', 'wp-parser-function' );
+
+		return in_array( $post_type, $post_types_with_source_code );
+	}
+
+	/**
+	 * Retrieve the root directory of the parsed WP code.
+	 *
+	 * If the option 'wp_parser_root_import_dir' (as set by the parser) is not
+	 * set, then assume ABSPATH.
+	 *
+	 * @return string
+	 */
+	function get_source_code_root_dir() {
+		$root_dir = get_option( 'wp_parser_root_import_dir' );
+
+		return $root_dir ? trailingslashit( $root_dir ) : ABSPATH;
+	}
+
+	/**
+	 * Retrieve source code for a function or method.
+	 *
+	 * @param int  $post_id     Optional. The post ID.
+	 * @param bool $force_parse Optional. Ignore potential value in post meta and reparse source file for source code?
+	 *
+	 * @return string The source code.
+	 */
+	function get_source_code( $post_id = null, $force_parse = false ) {
+
+		if ( empty( $post_id ) ) {
+			$post_id = get_the_ID();
+		}
+
+		// Get the source code stored in post meta.
+		$meta_key = '_wp-parser_source_code';
+		if ( ! $force_parse && $source_code = get_post_meta( $post_id, $meta_key, true ) ) {
+			return $source_code;
+		}
+
+		/* Source code hasn't been stored in post meta, so parse source file to get it. */
+
+		// Get the name of the source file.
+		$source_file = get_source_file( $post_id );
+
+		// Get the start and end lines.
+		$start_line = intval( get_post_meta( $post_id, '_wp-parser_line_num', true ) ) - 1;
+		$end_line   = intval( get_post_meta( $post_id, '_wp-parser_end_line_num', true ) );
+
+		// Sanity check to ensure proper conditions exist for parsing
+		if ( ! $source_file || ! $start_line || ! $end_line || ( $start_line > $end_line ) ) {
+			return '';
+		}
+
+		// Find just the relevant source code
+		$source_code = '';
+		$handle = @fopen( get_source_code_root_dir() . $source_file, 'r' );
+		if ( $handle ) {
+			$line = -1;
+			while ( ! feof( $handle ) ) {
+				$line++;
+				$source_line = fgets( $handle );
+
+				// Stop reading file once end_line is reached.
+				if ( $line > $end_line ) {
+					break;
+				}
+
+				// Skip lines until start_line is reached.
+				if ( $line < $start_line ) {
+					continue;
+				}
+
+				// Skip the last line if it is "endif;"; the parser includes the
+				// endif of a if/endif wrapping typical of pluggable functions.
+				if ( $line === $end_line && 'endif;' === trim( $source_line ) ) {
+					continue;
+				}
+
+				$source_code .= $source_line;
+			}
+			fclose( $handle );
+		}
+
+		update_post_meta( $post_id, $meta_key, addslashes( $source_code ) );
+
+		return $source_code;
 	}
 
 }
