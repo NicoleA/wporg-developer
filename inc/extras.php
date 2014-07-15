@@ -66,3 +66,10 @@ function wporg_developer_wp_title( $title, $sep ) {
 	return $title;
 }
 add_filter( 'wp_title', 'wporg_developer_wp_title', 10, 2 );
+
+function wporg_filter_archive_excerpt( $excerpt ) {
+	$excerpt = "<b>Function: </b>" . $excerpt;
+	return $excerpt;
+}
+add_filter( 'get_the_excerpt', 'wporg_filter_archive_excerpt' );
+

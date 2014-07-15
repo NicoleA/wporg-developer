@@ -558,6 +558,20 @@ namespace DevHub {
 	}
 
 	/**
+	 * Retrieve starting line number
+	 *
+	 * @param int $post_id
+	 *
+	 * @return string
+	 */
+	function get_line_number( $post_id = null ) {
+
+		$line_num = get_post_meta( empty( $post_id ) ? get_the_ID() : $post_id, '_wp-parser_line_num', true );
+
+		return $line_num;
+	}
+
+	/**
 	 * Compare two objects by name for sorting.
 	 *
 	 * @param WP_Post $a Post A
