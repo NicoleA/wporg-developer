@@ -335,27 +335,19 @@ namespace DevHub {
 	 * @return string
 	 */
 	function get_site_section_title() {
-		if ( is_post_type_archive( array( 'plugin-handbook' ) ) ) {
+		if ( is_post_type_archive( array( 'plugin-handbook' ) ) || is_singular( 'plugin-handbook' ) ) {
 			return __( 'Plugin Handbook', 'wporg' );
 		}
 
-		if ( is_post_type_archive( array ( 'theme-handbook' ) ) ) {
+		if ( is_post_type_archive( array ( 'theme-handbook' ) ) || is_singular( 'theme-handbook' ) ) {
 			return __( 'Theme Handbook', 'wporg' );
 		}
 
-		$parts = explode( '/', $_SERVER['REQUEST_URI'] );
-		switch ( $parts[1] ) {
-			case 'reference':
-				return __( 'Code Reference', 'wporg' );
-			case 'handbook':
-				if ( 'theme' == $parts[2] ) {
-					return __( 'Theme Handbook', 'wporg' );
-				} else {
-					return __( 'Plugin Handbook', 'wporg' );
-				}
-			default:
-				return __( 'Developer Resources', 'wporg' );
+		if ( is_front_page() ){
+			return __( 'Developer Resources', 'wporg' );
 		}
+
+		return __( 'Code Reference', 'wporg' );
 	}
 
 	/**
