@@ -182,7 +182,7 @@ button, input { line-height: normal; /* Addresses FF3/4 setting line-height usin
 .devhub-wrap .section.light-gray a { color: #606060; text-decoration: none; }
 .devhub-wrap .section .home-primary-content { max-width: 600px; max-width: 60rem; margin: 0 auto; }
 .devhub-wrap .box { padding: 30px; padding: 3rem; float: left; clear: none; }
-.devhub-wrap .section.search-section { padding-bottom: 0; }
+.devhub-wrap .section.search-section { padding-bottom: 0; max-width: 70rem; margin: 0 auto; }
 .devhub-wrap .searchform { overflow: hidden; height: auto; margin-bottom: 1em; }
 .devhub-wrap .searchform input[type="text"], .devhub-wrap .searchform input[type="submit"] { height: 50px; height: 5rem; margin-bottom: 1em; width: 100%; }
 .devhub-wrap .searchform input[type="submit"] { width: 85px; width: 8.5rem; float: left; }

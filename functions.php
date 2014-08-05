@@ -47,6 +47,8 @@ function init() {
 	register_taxonomies();
 	add_action( 'widgets_init', __NAMESPACE__ . '\\widgets_init' );
 	add_action( 'pre_get_posts', __NAMESPACE__ . '\\pre_get_posts' );
+	add_action( 'template_redirect', __NAMESPACE__ . '\\redirect_single_search_match' );
+	add_action( 'template_redirect', __NAMESPACE__ . '\\redirect_handbook' );
 	add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\theme_scripts_styles' );
 	add_filter( 'post_type_link', __NAMESPACE__ . '\\method_permalink', 10, 2 );
 	add_filter( 'term_link', __NAMESPACE__ . '\\taxonomy_permalink', 10, 3 );
@@ -54,6 +56,13 @@ function init() {
 	add_theme_support( 'post-thumbnails' );
 
 	add_filter( 'the_excerpt', __NAMESPACE__ . '\\lowercase_P_dangit_just_once' );
+	add_filter( 'the_content', __NAMESPACE__ . '\\make_doclink_clickable', 10, 5 );
+	add_filter( 'comments_open', __NAMESPACE__ . '\\can_user_post_example', 10, 2 );
+
+	// Add the handbook's 'Watch' action link.
+	if ( class_exists( 'WPorg_Handbook_Watchlist' ) && method_exists( 'WPorg_Handbook_Watchlist', 'display_action_link' ) ) {
+		add_action( 'wporg_action_links', array( 'WPorg_Handbook_Watchlist', 'display_action_link' ) );
+	}
 
 	// Temporarily disable comments
 	//add_filter( 'comments_open', '__return_false' );
@@ -347,13 +356,11 @@ function theme_scripts_styles() {
 	wp_enqueue_script( 'wporg-developer-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20120206', true );
 	wp_enqueue_script( 'wporg-developer-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20130115', true );
 
-	if ( post_type_has_source_code() ) {
+	if ( is_singular() && ( '0' != get_comments_number() || post_type_has_source_code() ) ) {
 		wp_enqueue_script( 'wporg-developer-function-reference', get_template_directory_uri() . '/js/function-reference.js', array( 'jquery', 'syntaxhighlighter-core', 'syntaxhighlighter-brush-php' ), '20140515', true );
 		wp_enqueue_style( 'syntaxhighlighter-core' );
 		wp_enqueue_style( 'syntaxhighlighter-theme-default' );
-	}
 
-	if ( is_singular() && comments_open() ) {
 		wp_enqueue_script( 'wporg-developer-code-examples', get_template_directory_uri() . '/js/code-example.js', array(), '20140423', true );
 		if ( get_option( 'thread_comments' ) ) {
 			wp_enqueue_script( 'comment-reply' );
@@ -400,6 +407,33 @@ function treat_comments_as_examples() {
 	remove_filter( 'comment_text',        'wpautop',            30 );
 
 	remove_filter( 'pre_comment_content', 'wp_rel_nofollow',    15 );
+
+	// Be more permissive with content of examples.
+	// Note: the content gets fully escaped via 'get_comment_text'.
+	if ( post_type_supports_examples() ) {
+		if ( current_user_can( 'unfiltered_html' ) ) {
+			remove_filter( 'pre_comment_content', 'wp_filter_post_kses' );
+		} else {
+			remove_filter( 'pre_comment_content', 'wp_filter_kses' );
+		}
+	}
+
+	add_filter( 'get_comment_text',  __NAMESPACE__ . '\\escape_example_content' );
+}
+
+/**
+ * Escapes the entirety of the content for examples.
+ *
+ * @param  string $text The comment/example content.
+ * @return string
+ */
+function escape_example_content( $text ) {
+	// Only proceed if the post type is one that has examples.
+	if ( ! post_type_supports_examples() ) {
+		return $text;
+	}
+
+	return htmlentities( $text );
 }
 
 /**
@@ -432,4 +466,108 @@ function lowercase_P_dangit_just_once( $excerpt ) {
 	}
 
 	return $excerpt;
+}
+
+/**
+ * Redirects a search query with only one result directly to that result.
+ */
+function redirect_single_search_match() {
+	if ( is_search() && 1 == $GLOBALS['wp_query']->found_posts ) {
+		wp_redirect( get_permalink( get_post() ) );
+		exit();
+	}
+}
+
+/**
+ * Redirects a naked handbook request to home.
+ */
+function redirect_handbook() {
+	if ( 'handbook' == get_query_var( 'name' ) && ! get_query_var( 'post_type ' ) ) {
+		wp_redirect( home_url() );
+		exit();
+	}
+}
+
+/**
+ * Makes phpDoc @link references clickable.
+ *
+ * Handles these five different types of links:
+ *
+ * - {@link http://en.wikipedia.org/wiki/ISO_8601}
+ * - {@link WP_Rewrite::$index}
+ * - {@link WP_Query::query()}
+ * - {@link esc_attr()}
+ * - {@link http://codex.wordpress.org/The_Loop Use new WordPress Loop}
+ *
+ * @param  string $content The content.
+ * @return string
+ */
+function make_doclink_clickable( $content ) {
+
+	if ( false === strpos( $content, '{@link ' ) ) {
+		return $content;
+	}
+
+	return preg_replace_callback(
+		'/\{@link ([^\}]+)\}/',
+		function ( $matches ) {
+
+			$link = $matches[1];
+
+			// Fix URLs made clickable during initial parsing
+			if ( 0 === strpos( $link, '<a ' ) ) {
+
+				if ( preg_match( '/^<a .*href=[\'\"]([^\'\"]+)[\'\"]>(.*)<\/a>$/', $link, $parts ) ) {
+					$link = '<a href="' . $parts[1] . '">' . esc_html( trim( $parts[2] ) ) . '</a>';
+				}
+
+			}
+
+			// Link to an external resource.
+			elseif ( 0 === strpos( $link, 'http' ) ) {
+
+				$parts = explode( ' ', $link, 2 );
+
+				// Link without linked text: {@link http://en.wikipedia.org/wiki/ISO_8601}
+				if ( 1 === count( $parts ) ) {
+					$link = '<a href="' . esc_url( $link ) . '">' . esc_html( $link ) . '</a>';
+				}
+
+				// Link with linked text: {@link http://codex.wordpress.org/The_Loop Use new WordPress Loop}
+				else {
+					$link = '<a href="' . esc_url( $parts[0] ) . '">' . esc_html( $parts[1] ) . '</a>';
+				}
+
+			}
+
+			// Link to an internal resource.
+			else {
+
+				// Link to class variable: {@link WP_Rewrite::$index}
+				if ( false !== strpos( $link, '::$' ) ) {
+					// Nothing to link to currently.
+				}
+
+				// Link to class method: {@link WP_Query::query()}
+				elseif ( false !== strpos( $link, '::' ) ) {
+					$link = '<a href="' .
+						get_post_type_archive_link( 'wp-parser-class' ) .
+						str_replace( array( '::', '()' ), array( '/', '' ), $link ) .
+						'">' . esc_html( $link ) . '</a>';
+				}
+
+				// Link to function: {@link esc_attr()}
+				else {
+					$link = '<a href="' .
+						get_post_type_archive_link( 'wp-parser-function' ) .
+						str_replace( '()', '', $link ) .
+						'">' . esc_html( $link ) . '</a>';
+				}
+
+			}
+
+			return $link;
+		},
+		$content
+	);
 }
