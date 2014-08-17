@@ -363,8 +363,6 @@ namespace DevHub {
 			default:
 				return __( 'Developer Resources', 'wporg' );
 		}
-
-		return __( 'Code Reference', 'wporg' );
 	}
 
 	/**

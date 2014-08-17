@@ -9,7 +9,7 @@ get_header(); ?>
 
 	<div id="content-area" class="has-sidebar">
 
-		<?php //breadcrumb_trail(); ?>
+		<?php breadcrumb_trail(); ?>
 
 		<main id="main" <?php post_class( 'site-main' ); ?> role="main">
 
