@@ -330,21 +330,38 @@ namespace DevHub {
 	}
 
 	/**
-	 * Get site section from url path
+	 * Get site section root URL based on URL path.
+	 *
+	 * @return string
+	 */
+	function get_site_section_url() {
+		$parts = explode( '/', $_SERVER['REQUEST_URI'] );
+		switch ( $parts[1] ) {
+			case 'reference':
+			case 'plugin':
+			case 'theme':
+				return home_url( '/' . $parts[1] . '/' );
+			default:
+				return home_url( '/' );
+		}
+	}
+
+	/**
+	 * Get site section title based on URL path.
 	 *
 	 * @return string
 	 */
 	function get_site_section_title() {
-		if ( is_post_type_archive( array( 'plugin-handbook' ) ) || is_singular( 'plugin-handbook' ) ) {
-			return __( 'Plugin Handbook', 'wporg' );
-		}
-
-		if ( is_post_type_archive( array ( 'theme-handbook' ) ) || is_singular( 'theme-handbook' ) ) {
-			return __( 'Theme Handbook', 'wporg' );
-		}
-
-		if ( is_front_page() ){
-			return __( 'Developer Resources', 'wporg' );
+		$parts = explode( '/', $_SERVER['REQUEST_URI'] );
+		switch ( $parts[1] ) {
+			case 'reference':
+				return __( 'Code Reference', 'wporg' );
+			case 'plugin':
+				return __( 'Plugin Handbook', 'wporg' );
+			case 'theme':
+				return __( 'Theme Handbook', 'wporg' );
+			default:
+				return __( 'Developer Resources', 'wporg' );
 		}
 
 		return __( 'Code Reference', 'wporg' );
@@ -620,6 +637,22 @@ namespace DevHub {
 	}
 
 	/**
+	 * Retrieve either the starting or ending line number.
+	 *
+	 * @param  int    $post_id Optional. The post ID.
+	 * @param  string $type    Optional. Either 'start' for starting line number, or 'end' for ending line number.
+	 *
+	 * @return int
+	 */
+	function get_line_number( $post_id = null, $type = 'start' ) {
+
+		$post_id  = empty( $post_id ) ? get_the_ID() : $post_id;
+		$meta_key = ( 'end' == $type ) ? '_wp-parser_end_line_num' : '_wp-parser_line_num';
+
+		return (int) get_post_meta( $post_id, $meta_key, true );
+	}
+
+	/**
 	 * Retrieve the URL to the actual source file and line.
 	 *
 	 * @param null $post_id     Post ID.
@@ -643,18 +676,6 @@ namespace DevHub {
 		}
 
 		return esc_url( $url );
-	}
-
-	/*
-	 * Retrieve starting line number
-	 *
-	 * @param int $post_id
-	 *
-	 * @return string
-	 */
-	function get_line_number( $post_id = null ) {
-		$line_num = get_post_meta( empty( $post_id ) ? get_the_ID() : $post_id, '_wp-parser_line_num', true );
-		return $line_num;
 	}
 
 	/**

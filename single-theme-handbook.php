@@ -11,7 +11,7 @@ get_header(); ?>
 
 		<?php //breadcrumb_trail(); ?>
 
-		<main id="main" class="site-main" role="main">
+		<main id="main" <?php post_class( 'site-main' ); ?> role="main">
 
 		<?php while ( have_posts() ) : the_post(); ?>
 

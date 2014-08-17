@@ -5,15 +5,15 @@
  * @package wporg
  */
 ?>
-	<h1><?php the_title(); ?></h1>
-	<?php
-	/*
-	 * Content
-	 */
-	?>
 
-	<?php the_content( __( '(More ...)' , 'wporg' ) ); ?>
+<h1><?php the_title(); ?></h1>
 
-	<div class="bottom-of-entry">&nbsp;</div>
+<?php
+/*
+ * Content
+ */
+?>
 
-</li>
+<?php the_content( __( '(More ...)' , 'wporg' ) ); ?>
+
+<div class="bottom-of-entry">&nbsp;</div>

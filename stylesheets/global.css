@@ -3,7 +3,15 @@
 body, button, input, select, textarea { color: #404040; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; font-size: 1.6rem; line-height: 1.5; }
 
 /* Headings */
+<<<<<<< HEAD
 h1, h2, h3, h4, h5, h6 { clear: both; font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; }
+=======
+h1, h2, h3, h4, h5, h6 {
+  clear: both;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+}
+>>>>>>> upstream/master
 
 hr { background-color: #dfdfdf; border: 0; height: 1px; margin: 1.5em 0; }
 

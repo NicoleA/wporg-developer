@@ -352,7 +352,7 @@ function theme_scripts_styles() {
 	wp_enqueue_style( 'dashicons' );
 	wp_enqueue_style( 'open-sans', '//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,400,300,600' );
 	wp_enqueue_style( 'wporg-developer-style', get_stylesheet_uri(), array(), '2' );
-	wp_enqueue_style( 'wp-dev-sass-compiled', get_template_directory_uri() . '/stylesheets/main.css', array( 'wporg-developer-style' ), '20140709-1' );
+	wp_enqueue_style( 'wp-dev-sass-compiled', get_template_directory_uri() . '/stylesheets/main.css', array( 'wporg-developer-style' ), '20140811' );
 	wp_enqueue_script( 'wporg-developer-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20120206', true );
 	wp_enqueue_script( 'wporg-developer-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20130115', true );
 
@@ -482,7 +482,12 @@ function redirect_single_search_match() {
  * Redirects a naked handbook request to home.
  */
 function redirect_handbook() {
-	if ( 'handbook' == get_query_var( 'name' ) && ! get_query_var( 'post_type ' ) ) {
+	if (
+		// Naked /handbook/ request
+		( 'handbook' == get_query_var( 'name' ) && ! get_query_var( 'post_type ' ) ) ||
+		// Temporary: Disable access to handbooks unless a member of the site
+		( ! is_user_member_of_blog() && is_post_type_archive( array( 'plugin-handbook', 'theme-handbook' ) ) )
+	) {
 		wp_redirect( home_url() );
 		exit();
 	}
