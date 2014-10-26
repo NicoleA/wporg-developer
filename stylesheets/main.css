@@ -269,7 +269,6 @@ input {
 .home .devhub-wrap #content {
   padding: 0;
 }
-
 .home .devhub-wrap .site-header {
   margin-bottom: 0;
 }
@@ -315,6 +314,20 @@ input {
 .devhub-wrap #content, .devhub-wrap #content-area {
   padding: 0 10px;
 }
+.devhub-wrap #content .toc-heading, .devhub-wrap #content-area .toc-heading {
+  clear: left;
+}
+.devhub-wrap #content table, .devhub-wrap #content-area table {
+  border: 1px solid #f0f0f0;
+}
+.devhub-wrap #content table th, .devhub-wrap #content-area table th {
+  padding: 1em;
+  border-bottom: 1px solid #f0f0f0;
+  background: #f0f0f0;
+}
+.devhub-wrap #content table td, .devhub-wrap #content-area table td {
+  padding: 0.8em 1em;
+}
 .devhub-wrap #content-area,
 .devhub-wrap .inner-wrap {
   margin: 0 auto;
@@ -332,6 +345,7 @@ input {
 .devhub-wrap .site-main h5,
 .devhub-wrap .site-main h6 {
   color: #1e1e1e;
+  margin-bottom: 1.5rem;
 }
 .devhub-wrap #headline h2 a {
   color: #555;
@@ -339,6 +353,7 @@ input {
   font-size: 28px;
   line-height: 1em;
   text-shadow: #fff 0px 1px 0px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .devhub-wrap h1 {
   font-size: 28px;
@@ -683,7 +698,7 @@ input {
   font-weight: 600;
 }
 .devhub-wrap .breadcrumb-trail {
-  margin-bottom: 1em;
+  margin-bottom: 1.25em;
 }
 .devhub-wrap h1.entry-title,
 .devhub-wrap h1.page-title {
@@ -889,9 +904,6 @@ input {
   font-style: italic;
   margin-bottom: 1em;
 }
-.devhub-wrap .reference-landing {
-  padding: 1em 0;
-}
 .devhub-wrap .reference-landing .section, .devhub-wrap .search-section {
   max-width: 700px;
   max-width: 70rem;
@@ -973,16 +985,24 @@ input {
   padding: 3px 0;
   font-size: 13px;
   border-radius: 50%;
+  vertical-align: top;
 }
 .devhub-wrap #sidebar > ul li ul li a {
   font-size: 16px;
   color: #4b4b4b;
   font-weight: bold;
 }
+.devhub-wrap #sidebar > ul li ul li > a {
+  display: inline-block;
+  width: 225px;
+}
 .devhub-wrap #sidebar > ul li ul li ul {
   list-style-type: none;
   padding: 0;
   margin: 0 0 0 35px;
+}
+.devhub-wrap #sidebar > ul li ul li ul li {
+  padding-left: 20px;
 }
 .devhub-wrap #sidebar > ul li ul li ul li:before {
   content: none;
@@ -990,12 +1010,14 @@ input {
 .devhub-wrap #sidebar > ul li ul li ul li a {
   font-weight: normal;
   font-size: 14px;
+  display: inline;
+  margin-left: -20px;
 }
 .devhub-wrap #sidebar > ul li ul li ul li ul {
   margin-left: 20px;
 }
-.devhub-wrap #sidebar .current-menu-item a {
-  font-weight: bold!important;
+.devhub-wrap #sidebar .current-menu-item > a {
+  font-weight: bold !important;
   color: #246998;
 }
 .devhub-wrap .menu-item-has-children {
@@ -1101,7 +1123,7 @@ input {
   border-bottom: 1px dotted #21759b;
 }
 .devhub-wrap .wp-parser-class h2, .devhub-wrap .wp-parser-function h2, .devhub-wrap .wp-parser-hook h2, .devhub-wrap .wp-parser-method h2 {
-  font-family: Georgia, ​Times, ​serif;
+  font-family: Georgia, Times, serif;
   margin-bottom: .5em;
 }
 .devhub-wrap .wp-parser-class .parameters p, .devhub-wrap .wp-parser-function .parameters p, .devhub-wrap .wp-parser-hook .parameters p, .devhub-wrap .wp-parser-method .parameters p {
@@ -1113,6 +1135,10 @@ input {
 .devhub-wrap .wp-parser-class .parameters dd .default, .devhub-wrap .wp-parser-function .parameters dd .default, .devhub-wrap .wp-parser-hook .parameters dd .default, .devhub-wrap .wp-parser-method .parameters dd .default {
   font-style: italic;
 }
+.devhub-wrap .wp-parser-class .parameters .param-hash, .devhub-wrap .wp-parser-function .parameters .param-hash, .devhub-wrap .wp-parser-hook .parameters .param-hash, .devhub-wrap .wp-parser-method .parameters .param-hash {
+  margin-left: 1.2em;
+  margin-bottom: 0.5em;
+}
 .devhub-wrap .wp-parser-class .learn-more, .devhub-wrap .wp-parser-function .learn-more, .devhub-wrap .wp-parser-hook .learn-more, .devhub-wrap .wp-parser-method .learn-more {
   background-color: #f1f1f1;
   border: 1px solid #dfdfdf;
@@ -1120,7 +1146,7 @@ input {
   padding: 20px;
 }
 .devhub-wrap.archive .wp-parser-class h1 a, .devhub-wrap.archive .wp-parser-function h1 a, .devhub-wrap.archive .wp-parser-hook h1 a, .devhub-wrap.archive .wp-parser-method h1 a, .devhub-wrap.search .wp-parser-class h1 a, .devhub-wrap.search .wp-parser-function h1 a, .devhub-wrap.search .wp-parser-hook h1 a, .devhub-wrap.search .wp-parser-method h1 a {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #21759b;
   font-weight: normal;
 }
@@ -1164,14 +1190,13 @@ input {
   padding: 0;
 }
 .devhub-wrap .comment-list li {
-  padding: 24px 24px 0 24px;
-  padding: 1.5rem 1.5rem 0 1.5rem;
+  padding: 2rem 1.5rem 1rem;
   border: 0 solid #eee;
   border-bottom-width: 1px;
   background: #fff;
 }
-.devhub-wrap .comment-list li {
-  padding-top: 0;
+.devhub-wrap .comment-list li:first-child {
+  padding-top: 1rem;
 }
 .devhub-wrap .comment-list .avatar {
   float: left;
@@ -1262,7 +1287,6 @@ input {
 .devhub-wrap nav.post-navigation .nav-links a[rel="next"] {
   text-align: right;
 }
-
 .devhub-wrap .table-of-contents {
   float: right;
   width: 200px;
@@ -1272,7 +1296,6 @@ input {
   z-index: 1;
   position: relative;
 }
-
 .devhub-wrap .table-of-contents h2 {
   margin: 0;
   padding-bottom: 3px;
@@ -1283,29 +1306,58 @@ input {
   background: #d0d0d0;
   color: #8a8989;
 }
-
 .devhub-wrap .table-of-contents ul,
 .devhub-wrap .table-of-contents ol {
   margin: 10px 20px;
 }
-
+.devhub-wrap .table-of-contents ul ul,
+.devhub-wrap .table-of-contents ul ol,
+.devhub-wrap .table-of-contents ol ul,
+.devhub-wrap .table-of-contents ol ol {
+  margin-right: 0;
+}
 .devhub-wrap ul.items {
   margin-bottom: 8px !important;
   list-style-type: none !important;
   padding-right: 10px;
 }
-
 .devhub-wrap ul.items li {
   padding-bottom: 6px !important;
 }
-
 .devhub-wrap ul.items li ul li,
 .devhub-wrap ul.items li ul li ul li {
   padding-bottom: 0 !important;
 }
-
 .devhub-wrap ul.items li a {
   color: #555 !important;
+}
+.devhub-wrap .comment-author {
+  float: left;
+}
+.devhub-wrap .user-note-voting {
+  font-size: 1.5em;
+  clear: left;
+  float: left;
+  margin-top: -5px;
+  margin-right: 10px;
+}
+.devhub-wrap .user-note-voting-up .dashicons, .devhub-wrap .user-note-voting-down .dashicons {
+  font-size: 30px;
+  height: 30px;
+  width: 30px;
+  color: #000;
+}
+.devhub-wrap .user-note-voting-up {
+  margin-left: -9px;
+}
+.devhub-wrap .user-note-voting-count {
+  margin-right: -2px;
+}
+.devhub-wrap .user-voted.user-note-voting-up .dashicons {
+  color: green;
+}
+.devhub-wrap .user-voted.user-note-voting-down .dashicons {
+  color: red;
 }
 
 @media (max-width: 60em) {

@@ -15,12 +15,28 @@
 	*,
 	*:before,
 	*:after {
-	  -moz-box-sizing: border-box;
-	  -webkit-box-sizing: border-box;
-	  box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		box-sizing: border-box;
 	}
 	#content, #content-area {
 		padding: 0 10px;
+
+		.toc-heading {
+			clear: left;
+		}
+
+		table {
+			border: 1px solid #f0f0f0;
+			th {
+				padding: 1em;
+				border-bottom: 1px solid #f0f0f0;
+				background: #f0f0f0;
+			}
+			td {
+				padding: 0.8em 1em;
+			}
+		}
 	}
 	#content-area,
 	.inner-wrap {
@@ -42,6 +58,7 @@
 		h5,
 		h6 {
 			color: #1e1e1e;
+			margin-bottom: 1.5rem;
 		}
 
 	}
@@ -416,7 +433,7 @@
 		font-size: 1.3rem;
 	}
 	.breadcrumb-trail {
-		margin-bottom: 1em;
+		margin-bottom: 1.25em;
 	}
 	h1.entry-title,
 	h1.page-title {
@@ -596,6 +613,10 @@
 		padding-bottom: 0;
 	}
 
+	.reference-landing .section.search-section {
+		padding-top: 0;
+	}
+
 	.searchform {
 		overflow: hidden;
 		height: auto;
@@ -649,15 +670,15 @@
 		margin-bottom: 1em;
 	}
 
+	.reference-landing .section, .search-section {
+		max-width: 700px;
+		max-width: 70rem;
+		margin: 0 auto;
+		padding: 1.5em 0;
+	}
+
 	.reference-landing {
-		padding: 1em 0;
-
 		.section {
-			max-width: 700px;
-			max-width: 70rem;
-			margin: 0 auto;
-			padding: 1.5em 0;
-
 			h2,
 			h3,
 			h4 {
@@ -736,23 +757,31 @@
 							padding: 3px 0;
 							font-size: 13px;
 							border-radius: 50%;
+							vertical-align: top;
 						}
 						a {
 							font-size: 16px;
 							color: #4b4b4b;
 							font-weight: bold;
 						}
+						& > a {
+							display: inline-block;
+							width: 225px;
+						}
 						ul {
 							list-style-type: none;
 							padding: 0;
 							margin: 0 0 0 35px;
 							li {
+								padding-left: 20px;
 								&:before {
 									content: none;
 								}
 								a {
 									font-weight: normal;
 									font-size: 14px;
+									display: inline;
+									margin-left: -20px;
 								}
 								ul {
 									margin-left: 20px;
@@ -763,7 +792,7 @@
 				}
 			}
 		}
-		.current-menu-item a {
+		.current-menu-item > a {
 			font-weight: bold !important;
 			color: #246998;
 		}
@@ -900,6 +929,10 @@
 					font-style: italic;
 				}
 			}
+			.param-hash {
+				margin-left: 1.2em;
+				margin-bottom: 0.5em;
+			}
 		}
 		.learn-more {
 			background-color: #f1f1f1;
@@ -974,15 +1007,14 @@
 	}
 
 	.comment-list li {
-		padding: 24px 24px 0 24px;
-		padding: 1.5rem 1.5rem 0 1.5rem;
+		padding: 2rem 1.5rem 1rem;
 		border: 0 solid #eee;
 		border-bottom-width: 1px;
 		background: #fff;
-	}
 
-	.comment-list li:first-child {
-		padding-top: 0;
+		&:first-child {
+			padding-top: 1rem;
+		}
 	}
 
 	.comment-list .avatar {
@@ -1146,6 +1178,10 @@
 		ul,
 		ol {
 			margin: 10px 20px;
+			ul,
+			ol {
+				margin-right: 0;
+			}
 		}
 	}
 
@@ -1166,6 +1202,35 @@
 				color: #555 !important;
 			}
 		}
+	}
+
+	.comment-author {
+		float: left;
+	}
+	.user-note-voting {
+		font-size: 1.5em;
+		clear: left;
+		float: left;
+		margin-top: -5px;
+		margin-right: 10px;
+	}
+	.user-note-voting-up .dashicons, .user-note-voting-down .dashicons {
+		font-size: 30px;
+		height: 30px;
+		width: 30px;
+		color: #000;
+	}
+	.user-note-voting-up {
+		margin-left: -9px;
+	}
+	.user-note-voting-count {
+		margin-right: -2px;
+	}
+	.user-voted.user-note-voting-up .dashicons {
+		color: green;
+	}
+	.user-voted.user-note-voting-down .dashicons {
+		color: red;
 	}
 }
 

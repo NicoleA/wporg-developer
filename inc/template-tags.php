@@ -72,13 +72,91 @@ namespace {
 		}
 	endif;
 
-	if ( ! function_exists( 'wporg_developer_example' ) ) :
+	if ( ! function_exists( 'wporg_developer_post_nav_via_menu' ) ) :
 		/**
-		 * Template for examples.
+		 * Outputs previous and/or next post navigation links using the
+		 * specified menu to inform navigation ordering.
 		 *
-		 * Used as a callback by wp_list_comments() for displaying the examples.
+		 * @param  string $menu_name The name of the menu to use for nav ordering.
 		 */
-		function wporg_developer_example( $comment, $args, $depth ) {
+		function wporg_developer_post_nav_via_menu( $menu_name ) {
+			// Get the items for the specified menu
+			if ( ! $menu_items = wp_get_nav_menu_items( $menu_name ) ) {
+				return;
+			}
+
+			// Get ids for all menu objects
+			$menu_ids = wp_list_pluck( $menu_items, 'object_id' );
+
+			// Get current post
+			if ( ! $post = get_post() ) {
+				return;
+			}
+
+			// Index of current post in menu. Return if not in menu.
+			$i = array_search( $post->ID, $menu_ids );
+			if ( false === $i ) {
+				return;
+			}
+
+			// Find the previous post (note: preview menu item may not be a post)
+			$previous = null;
+			for ( $n = $i-1; $n >= 0; $n-- ) {
+				if ( isset( $menu_items[ $n ] ) && is_a( $menu_items[ $n ], 'WP_Post' ) ) {
+					$previous = $menu_items[ $n ];
+					break;
+				}
+			}
+
+			// Find the next post (note: next menu item may not be a post)
+			$next = null;
+			$max = count( $menu_items );
+			for ( $n = $i+1; $n < $max; $n++ ) {
+				if ( isset( $menu_items[ $n ] ) && is_a( $menu_items[ $n ], 'WP_Post' ) ) {
+					$next = $menu_items[ $n ];
+					break;
+				}
+			}
+
+			if ( ! $previous && ! $next ) {
+				return;
+			}
+			?>
+
+			<nav class="navigation post-navigation" role="navigation">
+				<h1 class="screen-reader-text"><?php _e( 'Post navigation', 'wporg' ); ?></h1>
+				<div class="nav-links">
+
+				<?php
+				if ( $previous ) {
+					printf( '<a href="%s" rel="previous"><span class="meta-nav">&larr;</span> %s</a>',
+						esc_url( $previous->url ),
+						esc_html( $previous->title )
+					);
+				}
+
+				if ( $next ) {
+					printf( '<a href="%s" rel="next">%s <span class="meta-nav">&rarr;</span></a>',
+						esc_url( $next->url ),
+						esc_html( $next->title )
+					);
+				}
+				?>
+
+				</div>
+				<!-- .nav-links -->
+			</nav><!-- .navigation -->
+		<?php
+		}
+	endif;
+
+	if ( ! function_exists( 'wporg_developer_user_note' ) ) :
+		/**
+		 * Template for user contributed notes.
+		 *
+		 * Used as a callback by wp_list_comments() for displaying the notes.
+		 */
+		function wporg_developer_user_note( $comment, $args, $depth ) {
 			$GLOBALS['comment'] = $comment;
 
 			if ( 'pingback' == $comment->comment_type || 'trackback' == $comment->comment_type ) : ?>
@@ -92,12 +170,13 @@ namespace {
 
 				<li id="comment-<?php comment_ID(); ?>" <?php comment_class( empty( $args['has_children'] ) ? '' : 'parent' ); ?>>
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body">
-					<div class="comment-content code-example-container">
-						<pre class="brush: php; toolbar: false;"><?php comment_text(); /* Fully escaped via filter */ ?></pre>
+					<div class="comment-content">
+						<?php comment_text(); ?>
 					</div>
 					<!-- .comment-content -->
 
 					<footer class="comment-meta">
+						<?php DevHub_User_Contributed_Notes_Voting::show_voting(); ?>
 						<div class="comment-author vcard">
 							<span class="comment-author-attribution">
 							<?php if ( 0 != $args['avatar_size'] ) {
@@ -124,12 +203,12 @@ namespace {
 									<?php printf( _x( '%1$s at %2$s', '1: date, 2: time', 'wporg' ), get_comment_date(), get_comment_time() ); ?>
 								</time>
 							</a>
-							<?php edit_comment_link( __( 'Edit', 'wporg' ), '<span class="edit-link">', '</span>' ); ?>
+							<?php edit_comment_link( __( 'Edit', 'wporg' ), '<span class="edit-link">&mdash; ', '</span>' ); ?>
 						</div>
 						<!-- .comment-metadata -->
 
 						<?php if ( '0' == $comment->comment_approved ) : ?>
-							<p class="comment-awaiting-moderation"><?php _e( 'Your example is awaiting moderation.', 'wporg' ); ?></p>
+							<p class="comment-awaiting-moderation"> &mdash; <?php _e( 'Your note is awaiting moderation.', 'wporg' ); ?></p>
 						<?php endif; ?>
 					</footer>
 					<!-- .comment-meta -->
@@ -148,7 +227,7 @@ namespace {
 			<?php
 			endif;
 		}
-	endif; // ends check for wporg_developer_comment()
+	endif; // ends check for wporg_developer_user_note()
 
 	if ( ! function_exists( 'wporg_developer_posted_on' ) ) :
 		/**
@@ -225,11 +304,11 @@ namespace DevHub {
 		<article id="comment-<?php comment_ID(); ?>" class="comment">
 
 			<?php if ( $comment->comment_approved == '0' ) : ?>
-				<em class="comment-awaiting-moderation"><?php _e( 'Your example is awaiting moderation.', 'wporg' ); ?></em>
+				<em class="comment-awaiting-moderation"><?php _e( 'Your note is awaiting moderation.', 'wporg' ); ?></em>
 				<br />
 			<?php endif; ?>
 
-			<pre class="example-content"><?php echo htmlentities( get_comment_text() ); ?></pre>
+			<pre class="user-note-content"><?php echo htmlentities( get_comment_text() ); ?></pre>
 
 			<footer class="comment-meta">
 				<div class="comment-author vcard">
@@ -354,6 +433,8 @@ namespace DevHub {
 	function get_site_section_title() {
 		$parts = explode( '/', $_SERVER['REQUEST_URI'] );
 		switch ( $parts[1] ) {
+			case 'resources':
+				return sprintf( __( 'Developer Resources: %s', 'wporg' ), get_the_title() );
 			case 'reference':
 				return __( 'Code Reference', 'wporg' );
 			case 'plugin':
@@ -497,10 +578,20 @@ namespace DevHub {
 					foreach ( $tag['types'] as $i => $v ) {
 						$types[ $i ] = "<span class=\"{$v}\">{$v}</span>";
 					}
+
+					// Normalize spacing at beginning of hash notation params.
+					if ( $tag['content'] && '{' == $tag['content'][0] ) {
+						$tag['content'] = '{ ' . trim( substr( $tag['content'], 1 ) );
+					}
+
 					$params[ $tag['variable'] ]['types'] = implode( '|', $types );
 					if ( strtolower( substr( $tag['content'], 0, 9 ) ) == "optional." ) {
 						$params[ $tag['variable'] ]['required'] = 'Optional';
 						$params[ $tag['variable'] ]['content'] = substr( $tag['content'], 10 );
+						$encountered_optional = true;
+					} elseif ( strtolower( substr( $tag['content'], 2, 9 ) ) == "optional." ) { // Hash notation param
+						$params[ $tag['variable'] ]['required'] = 'Optional';
+						$params[ $tag['variable'] ]['content'] = '{ ' . substr( $tag['content'], 12 );
 						$encountered_optional = true;
 					} elseif ( $encountered_optional ) {
 						$params[ $tag['variable'] ]['required'] = 'Optional';
@@ -703,13 +794,13 @@ namespace DevHub {
 	}
 
 	/**
-	 * Does the post type support having examples?
+	 * Does the post type support having user notes?
 	 *
 	 * @param  string  Optional. The post type name. If blank, assumes current post type.
 	 *
 	 * @return boolean
 	 */
-	function post_type_supports_examples( $post_type = null ) {
+	function post_type_supports_user_notes( $post_type = null ) {
 		$post_type = $post_type ? $post_type : get_post_type();
 
 		return ( 0 === strpos( $post_type, 'wp-parser-' ) );
@@ -799,38 +890,111 @@ namespace DevHub {
 	}
 
 	/**
-	 * Indicates if the current user can post an example.
+	 * Indicates if the current user can post a user contibuted note.
 	 *
 	 * This only affects post types wp-parser-* as they are the only things
-	 * that can have examples.
+	 * that can have user contributed notes.
 	 *
 	 * A custom check can be performed by hooking the filter
-	 * 'wporg_devhub-can_user_post_example' and returning a
+	 * 'wporg_devhub-can_user_post_note' and returning a
 	 * value other than null.
 	 *
-	 * By default, the ability to post examples is restricted to members of the
+	 * By default, the ability to post notes is restricted to members of the
 	 * blog.
 	 *
 	 * @param  int  $post_id The post ID.
 	 *
-	 * @return bool True if the user can post an example.
+	 * @return bool True if the user can post a note.
 	 */
-	function can_user_post_example( $open, $post_id ) {
+	function can_user_post_note( $open, $post_id ) {
 
-		// Only proceed if the post type is one that has examples.
+		// Only proceed if the post type is one that has user contributed notes.
 		if ( 0 !== strpos( get_post_type( (int) $post_id ), 'wp-parser-' ) ) {
-			// Temporarily disable commenting that isn't for an example since various
+			// Temporarily disable commenting that isn't for a note since various
 			// changes need to take place to enable regular commenting.
 			return false; //$open;
 		}
 
 		// Permit default logic to be overridden via filter that returns value other than null.
-		if ( null !== ( $can = apply_filters( 'wporg_devhub-can_user_post_example', null, $post_id ) ) ) {
+		if ( null !== ( $can = apply_filters( 'wporg_devhub-can_user_post_note', null, $post_id ) ) ) {
 			return $can;
 		}
 
-		// Default to limiting ability to post examples to members of the blog.
+		// Default to limiting ability to post notes to members of the blog.
 		return is_user_member_of_blog();
+	}
+
+	/**
+	 * Gets the long description.
+	 *
+	 * The long description is stored in the 'wporg_parsed_content' meta field.
+	 *
+	 * @param  null|WP_Post Optiona. The post.
+	 * @return string
+	 */
+	function get_long_description( $post = null ) {
+		$post = get_post( $post );
+
+		if ( $long_description = get_post_meta( $post->ID, 'wporg_parsed_content', true ) ) {
+			$long_description = apply_filters( 'the_content', $long_description );
+		}
+
+		return $long_description;
+	}
+
+	/**
+	 * Formats the output of params defined using hash notation.
+	 *
+	 * This is a temporary measure until the parser parses the hash notation
+	 * into component elements that the theme could then handle and style
+	 * properly.
+	 *
+	 * Also, as a stopgap this is going to begin as a barebones hack to simply
+	 * keep the text looking like one big jumble.
+	 *
+	 * @param  string $text The content for the param.
+	 * @return string
+	 */
+	function param_formatting_fixup( $text ) {
+		// Don't do anything if this isn't a hash notation string.
+		if ( '{' != $text[0] ) {
+			return $text;
+		}
+
+		$new_text = '';
+		$text     = trim( substr( $text, 1, -1 ) );
+		$text     = str_replace( '@type', "\n@type", $text );
+
+		$in_list = false;
+		$parts = explode( "\n", $text );
+		foreach ( $parts as $part ) {
+			$part = preg_replace( '/\s+/', ' ', $part );
+			list( $wordtype, $type, $name, $description ) = explode( ' ', $part, 4 );
+
+			if ( '@type' != $wordtype ) {
+				if ( $in_list ) {
+					$in_list = false;
+					$new_text .= "</li></ul>\n";
+				}
+
+				$new_text .= $part;
+			} else {
+				if ( $in_list ) {
+					$new_text .= '<li>';
+				} else {
+					$new_text .= '<ul class="param-hash"><li>';
+					$in_list = true;
+				}
+
+				$new_text .= "<b>'" . substr( $name, 1 ) . "'</b><br /><i><span class='type'>({$type})</span></i> {$description}</li>\n";
+			}
+		}
+
+		if ( $in_list ) {
+			$new_text .= "</li></ul>\n";
+		}
+
+		return $new_text;
 	}
 
 }

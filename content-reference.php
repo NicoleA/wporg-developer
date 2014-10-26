@@ -11,7 +11,7 @@
 <?php if ( is_single() ) : ?>
 
 	<section class="long-description">
-		<?php the_content(); ?>
+		<?php echo get_long_description(); ?>
 	</section>
 	<section class="return"><p><strong>Return:</strong> <?php echo get_return(); ?></p></section>
 
@@ -48,11 +48,20 @@ if ( ! empty( $since ) ) : ?>
 	<?php if ( is_archive() ) : ?>
 	<section class="meta">Used by TODO | Uses TODO | TODO Examples</section>
 	<?php endif; ?>
-	<hr/>
-	<section class="explanation">
-		<h2><?php _e( 'Explanation', 'wporg' ); ?></h2>
-	</section>
 	*/ ?>
+
+	<?php
+	ob_start();
+	the_content();
+	$explanation = ob_get_clean();
+	if ( $explanation ) :
+		?>
+		<hr/>
+		<section class="explanation">
+			<h2><?php _e( 'Explanation', 'wporg' ); ?></h2>
+			<?php the_content(); ?>
+		</section>
+	<?php endif; ?>
 
 	<?php if ( $params = get_params() ) : ?>
 	<hr/>
@@ -68,11 +77,11 @@ if ( ! empty( $since ) ) : ?>
 					<?php if ( ! empty( $param['types'] ) ) : ?>
 					<span class="type">(<?php echo wp_kses_post( $param['types'] ); ?>)</span>
 					<?php endif; ?>
-					<?php if ( ! empty( $param['required'] ) ) : ?>
+					<?php if ( ! empty( $param['required'] ) && 'wp-parser-hook' !== get_post_type() ) : ?>
 					<span class="required">(<?php echo esc_html( $param['required'] ); ?>)</span>
 					<?php endif; ?>
 					<?php if ( ! empty( $param['content'] ) ) : ?>
-					<span class="description"><?php echo wp_kses_post( $param['content'] ); ?></span>
+					<span class="description"><?php echo param_formatting_fixup( wp_kses_post( $param['content'] ) ); ?></span>
 					<?php endif; ?>
 				</p>
 				<?php if ( ! empty( $param['default'] ) ) : ?>
@@ -142,9 +151,9 @@ if ( ! empty( $since ) ) : ?>
 
 	<?php if ( comments_open() || '0' != get_comments_number() ) : ?>
 	<hr/>
-	<section class="examples">
-		<h2><?php _e( 'Examples', 'wporg' ); ?></h2>
-		<?php comments_template(); /* TODO: add '/examples.php' */ ?>
+	<section class="user-notes">
+		<h2><?php _e( 'User Contributed Notes', 'wporg' ); ?></h2>
+		<?php comments_template(); /* TODO: add '/user-notes.php' */ ?>
 	</section>
 	<?php endif; ?>
 

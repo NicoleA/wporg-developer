@@ -22,6 +22,11 @@ require __DIR__ . '/inc/customizer.php';
  */
 require __DIR__ . '/inc/jetpack.php';
 
+/**
+ * Class for editing parsed content on the Function, Class, Hook, and Method screens.
+ */
+require_once( __DIR__ . '/inc/parsed-content.php' );
+
 if ( ! function_exists( 'loop_pagination' ) ) {
 	require __DIR__ . '/inc/loop-pagination.php';
 }
@@ -29,6 +34,21 @@ if ( ! function_exists( 'loop_pagination' ) ) {
 if ( ! function_exists( 'breadcrumb_trail' ) ) {
 	require __DIR__ . '/inc/breadcrumb-trail.php';
 }
+
+/**
+ * User-submitted content (comments, notes, etc).
+ */
+require __DIR__ . '/inc/user-content.php';
+
+/**
+ * Voting for user-submitted content.
+ */
+require __DIR__ . '/inc/user-content-voting.php';
+
+/**
+ * Redirects.
+ */
+require __DIR__ . '/inc/redirects.php';
 
 /**
  * Set the content width based on the theme's design and stylesheet.
@@ -45,10 +65,11 @@ function init() {
 
 	register_post_types();
 	register_taxonomies();
+
+	add_action( 'after_switch_theme', __NAMESPACE__ . '\\add_roles' );
+	add_filter( 'user_has_cap', __NAMESPACE__ . '\\adjust_handbook_editor_caps', 11 );
 	add_action( 'widgets_init', __NAMESPACE__ . '\\widgets_init' );
 	add_action( 'pre_get_posts', __NAMESPACE__ . '\\pre_get_posts' );
-	add_action( 'template_redirect', __NAMESPACE__ . '\\redirect_single_search_match' );
-	add_action( 'template_redirect', __NAMESPACE__ . '\\redirect_handbook' );
 	add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\theme_scripts_styles' );
 	add_filter( 'post_type_link', __NAMESPACE__ . '\\method_permalink', 10, 2 );
 	add_filter( 'term_link', __NAMESPACE__ . '\\taxonomy_permalink', 10, 3 );
@@ -57,19 +78,74 @@ function init() {
 
 	add_filter( 'the_excerpt', __NAMESPACE__ . '\\lowercase_P_dangit_just_once' );
 	add_filter( 'the_content', __NAMESPACE__ . '\\make_doclink_clickable', 10, 5 );
-	add_filter( 'comments_open', __NAMESPACE__ . '\\can_user_post_example', 10, 2 );
+	add_filter( 'the_content', __NAMESPACE__ . '\\autolink_credits' );
 
 	// Add the handbook's 'Watch' action link.
 	if ( class_exists( 'WPorg_Handbook_Watchlist' ) && method_exists( 'WPorg_Handbook_Watchlist', 'display_action_link' ) ) {
 		add_action( 'wporg_action_links', array( 'WPorg_Handbook_Watchlist', 'display_action_link' ) );
 	}
 
-	// Temporarily disable comments
-	//add_filter( 'comments_open', '__return_false' );
-
 	add_filter( 'breadcrumb_trail_items',  __NAMESPACE__ . '\\breadcrumb_trail_items', 10, 2 );
 
-	treat_comments_as_examples();
+}
+
+
+/**
+ * Create the handbook_editor role which can only edit handbooks.
+ *
+ * @access public
+ *
+ */
+function add_roles() {
+	add_role(
+		'handbook_editor',
+		__( 'Handbook Editor', 'wporg' ),
+		array(
+			'moderate_comments'             => true,
+			'upload_files'                  => true,
+			'unfiltered_html'               => true,
+			'read'                          => true,
+			'edit_handbook_pages'           => true,
+			'edit_others_handbook_pages'    => true,
+			'edit_published_handbook_pages' => true,
+			'edit_private_handbook_pages'   => true,
+			'read_private_handbook_pages'   => true,
+		)
+	);
+}
+
+/**
+ * Adjusts handbook capabilities for roles.
+ *
+ * Undoes some capability assignments by the handbook plugin since only
+ * administrators, editors, and handbook_editors can manipulate handbooks.
+ *
+ * @access public
+ *
+ * @param  array $caps Array of user capabilities.
+ * @return array
+ */
+function adjust_handbook_editor_caps( $caps ) {
+	if ( ! is_user_member_of_blog() || ! class_exists( 'WPorg_Handbook' ) ) {
+		return $caps;
+	}
+
+	// Get current user's role.
+	$role = wp_get_current_user()->roles[0];
+
+	// Unset caps set by handbook plugin.
+	// Only administrators, editors, and handbook_editors can manipulate handbooks.
+	if ( ! in_array( $role, array( 'administrator', 'editor', 'handbook_editor' ) ) ) {
+		foreach ( \WPorg_Handbook::caps() as $cap ) {
+			unset( $caps[ $cap ] );
+		}
+
+		foreach ( \WPorg_Handbook::editor_caps() as $cap ) {
+			unset( $caps[ $cap ] );
+		}
+	}
+
+	return $caps;
 }
 
 /**
@@ -352,102 +428,9 @@ function theme_scripts_styles() {
 	wp_enqueue_style( 'dashicons' );
 	wp_enqueue_style( 'open-sans', '//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,400,300,600' );
 	wp_enqueue_style( 'wporg-developer-style', get_stylesheet_uri(), array(), '2' );
-	wp_enqueue_style( 'wp-dev-sass-compiled', get_template_directory_uri() . '/stylesheets/main.css', array( 'wporg-developer-style' ), '20140813b' );
+	wp_enqueue_style( 'wp-dev-sass-compiled', get_template_directory_uri() . '/stylesheets/main.css', array( 'wporg-developer-style' ), '20141010' );
 	wp_enqueue_script( 'wporg-developer-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20120206', true );
 	wp_enqueue_script( 'wporg-developer-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20130115', true );
-
-	if ( is_singular() && ( '0' != get_comments_number() || post_type_has_source_code() ) ) {
-		wp_enqueue_script( 'wporg-developer-function-reference', get_template_directory_uri() . '/js/function-reference.js', array( 'jquery', 'syntaxhighlighter-core', 'syntaxhighlighter-brush-php' ), '20140515', true );
-		wp_enqueue_style( 'syntaxhighlighter-core' );
-		wp_enqueue_style( 'syntaxhighlighter-theme-default' );
-
-		wp_enqueue_script( 'wporg-developer-code-examples', get_template_directory_uri() . '/js/code-example.js', array(), '20140423', true );
-		if ( get_option( 'thread_comments' ) ) {
-			wp_enqueue_script( 'comment-reply' );
-		}
-	}
-}
-
-/**
- * Handles adding/removing hooks to enable comments as examples.
- *
- * Mostly gives users greater permissions in terms of comment content.
- *
- * In order to submit code examples, users must be able to post with less restrictions.
- */
-function treat_comments_as_examples() {
-	// Restricts commenting to logged in users.
-	add_filter( 'comments_open', __NAMESPACE__ . '\\prevent_invalid_comment_submissions', 10, 2 );
-
-	if ( ! current_user_can( 'unfiltered_html' ) ) {
-		remove_filter( 'pre_comment_content', 'wp_filter_kses'      );
-		add_filter(    'pre_comment_content', 'wp_filter_post_kses' );
-	}
-
-	// Force comment registration to be true
-	add_filter( 'pre_option_comment_registration', '__return_true' );
-
-	// Force comment moderation to be true
-	add_filter( 'pre_option_comment_moderation',   '__return_true' );
-
-	// Remove reply to link
-	add_filter( 'comment_reply_link',              '__return_empty_string' );
-
-/*	foreach ( array( 'comment_save_pre', 'pre_comment_content' ) as $filter ) {
-		add_filter( $filter, 'balanceTags', 50 );
-	}*/
-
-	remove_filter( 'comment_text',        'capital_P_dangit',   31 );
-
-	remove_filter( 'comment_text',        'wptexturize'            );
-	remove_filter( 'comment_text',        'convert_chars'          );
-	remove_filter( 'comment_text',        'make_clickable',      9 );
-	remove_filter( 'comment_text',        'force_balance_tags', 25 );
-	remove_filter( 'comment_text',        'convert_smilies',    20 );
-	remove_filter( 'comment_text',        'wpautop',            30 );
-
-	remove_filter( 'pre_comment_content', 'wp_rel_nofollow',    15 );
-
-	// Be more permissive with content of examples.
-	// Note: the content gets fully escaped via 'get_comment_text'.
-	if ( post_type_supports_examples() ) {
-		if ( current_user_can( 'unfiltered_html' ) ) {
-			remove_filter( 'pre_comment_content', 'wp_filter_post_kses' );
-		} else {
-			remove_filter( 'pre_comment_content', 'wp_filter_kses' );
-		}
-	}
-
-	add_filter( 'get_comment_text',  __NAMESPACE__ . '\\escape_example_content' );
-}
-
-/**
- * Escapes the entirety of the content for examples.
- *
- * @param  string $text The comment/example content.
- * @return string
- */
-function escape_example_content( $text ) {
-	// Only proceed if the post type is one that has examples.
-	if ( ! post_type_supports_examples() ) {
-		return $text;
-	}
-
-	return htmlentities( $text );
-}
-
-/**
- * Disables commenting to invalid or non-users.
- *
- * @param bool  $status Default commenting status for post.
- * @return bool False if commenter isn't a user, otherwise the passed in status.
- */
-function prevent_invalid_comment_submissions( $status, $post_id ) {
-	if ( $_POST && ( ! is_user_logged_in() || ! is_user_member_of_blog() ) ) {
-		return false;
-	}
-
-	return $status;
 }
 
 /**
@@ -469,31 +452,6 @@ function lowercase_P_dangit_just_once( $excerpt ) {
 }
 
 /**
- * Redirects a search query with only one result directly to that result.
- */
-function redirect_single_search_match() {
-	if ( is_search() && 1 == $GLOBALS['wp_query']->found_posts ) {
-		wp_redirect( get_permalink( get_post() ) );
-		exit();
-	}
-}
-
-/**
- * Redirects a naked handbook request to home.
- */
-function redirect_handbook() {
-	if (
-		// Naked /handbook/ request
-		( 'handbook' == get_query_var( 'name' ) && ! get_query_var( 'post_type ' ) ) ||
-		// Temporary: Disable access to handbooks unless a member of the site
-		( ! is_user_member_of_blog() && is_post_type_archive( array( 'plugin-handbook', 'theme-handbook' ) ) )
-	) {
-		wp_redirect( home_url() );
-		exit();
-	}
-}
-
-/**
  * Makes phpDoc @link references clickable.
  *
  * Handles these five different types of links:
@@ -509,12 +467,13 @@ function redirect_handbook() {
  */
 function make_doclink_clickable( $content ) {
 
-	if ( false === strpos( $content, '{@link ' ) ) {
+	// Nothing to change unless a @link or @see reference is in the text.
+	if ( false === strpos( $content, '{@link ' ) && false === strpos( $content, '{@see ' ) ) {
 		return $content;
 	}
 
 	return preg_replace_callback(
-		'/\{@link ([^\}]+)\}/',
+		'/\{@(?:link|see) ([^\}]+)\}/',
 		function ( $matches ) {
 
 			$link = $matches[1];
@@ -575,4 +534,34 @@ function make_doclink_clickable( $content ) {
 		},
 		$content
 	);
+}
+
+/**
+ * For specific credit pages, link @usernames references to their profiles on
+ * profiles.wordpress.org.
+ *
+ * Simplistic matching. Does not verify that the @username is a legitimate
+ * WP.org user.
+ *
+ * @param  string $content Post content
+ * @return string
+ */
+function autolink_credits( $content ) {
+	// Only apply to the 'credits' (themes handbook) and 'credits-2' (plugin
+	// handbook) pages
+	if ( is_single( 'credits' ) || is_single( 'credits-2' ) ) {
+		$content = preg_replace_callback(
+			'/\B@([\w\-]+)/i',
+			function ( $matches ) {
+				return sprintf(
+					'<a href="https://profiles.wordpress.org/%s">@%s</a>',
+					esc_attr( $matches[1] ),
+					esc_html( $matches[1] )
+				);
+			},
+			$content
+		);
+	}
+
+	return $content;
 }

@@ -60,10 +60,15 @@ function wporg_developer_wp_title( $title, $sep ) {
 	// Add handbook name to title if relevent
 	elseif ( false !== strpos( $post_type, 'handbook' ) ) {
 		if ( $post_type_object = get_post_type_object( $post_type ) ) {
-			$label = get_post_type_object( $post_type )->labels->name . " $sep ";
-			// Don't add the label for a page of the same name as post type name.
-			if ( $title != $label ) {
-				$title .= $label;
+			$handbook_label = get_post_type_object( $post_type )->labels->name . " $sep ";
+			$handbook_name  = \WPorg_Handbook::get_name( $post_type ) . " Handbook $sep ";
+
+			// Replace title with handbook name if this is landing page for the handbook
+			if ( $title == $handbook_label ) {
+				$title = $handbook_name;
+			// Otherwise, append the handbook name
+			} else {
+				$title .= $handbook_name;
 			}
 		}
 	}
@@ -105,11 +110,11 @@ add_filter( 'get_the_excerpt', 'wporg_filter_archive_excerpt' );
  * Appends parentheses to titles in archive view for functions and methods.
  *
  * @param  string      $title The title.
- * @param  int|WP_Post $post  The post ID or post object.
+ * @param  int|WP_Post $post  Optional. The post ID or post object.
  * @return string
  */
-function wporg_filter_archive_title( $title, $post ) {
-	if ( ( ! is_single() || doing_filter( 'single_post_title' ) ) && in_array( get_post_type( $post ), array( 'wp-parser-function', 'wp-parser-method' ) ) ) {
+function wporg_filter_archive_title( $title, $post = null ) {
+	if ( ! is_admin() && $post && ( ! is_single() || doing_filter( 'single_post_title' ) ) && in_array( get_post_type( $post ), array( 'wp-parser-function', 'wp-parser-method' ) ) ) {
 		$title .= '()';
 	}
 
